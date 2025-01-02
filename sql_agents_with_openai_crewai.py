@@ -77,7 +77,7 @@ if uploaded_file is not None:
     # Initialize OpenAI model instead of ChatGroq
     llm = ChatOpenAI(
         temperature=0,
-        model_name="gpt-3.5-turbo",  # Specify the model you want to use (e.g., gpt-4)
+        model_name="gpt-4o",  # Specify the model you want to use (e.g., gpt-4)
         callbacks=[LLMCallbackHandler(Path("prompts.jsonl"))],
     )
 
