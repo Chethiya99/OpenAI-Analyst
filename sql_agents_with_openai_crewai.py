@@ -218,8 +218,8 @@ if uploaded_file is not None:
 
                    # Save plot to a temporary file and display it in Streamlit UI
                    with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as tmpfile:
-                       plt.savefig(tmpfile.name)
-                       plt.close()  # Close the plot to free up memory
+                       plt.savefig(tmpfile.name)  # Save figure to temporary file
+                       plt.close()  # Close figure to free up memory
 
                        # Displaying image in Streamlit
                        st.image(tmpfile.name) 
