@@ -3,3 +3,4 @@ crewai[tools]==0.32.0
 langchain-groq==0.1.5
 pysqlite-binary
 matplotlib
+plotly
