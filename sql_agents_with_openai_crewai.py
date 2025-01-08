@@ -9,7 +9,7 @@ from pathlib import Path
 from datetime import datetime, timezone
 from dataclasses import asdict, dataclass
 from textwrap import dedent
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List
 
 import pandas as pd
 import streamlit as st
@@ -187,17 +187,17 @@ if uploaded_file is not None:
     )
 
     crew = Crew(
-        agents=[sql_dev, data_analyst, plot_code_generator, report_writer],
-        tasks=[extract_data, analyze_data, generate_plot_code],
-        process=Process.sequential,
-        verbose=2,
+       agents=[sql_dev, data_analyst, plot_code_generator, report_writer],
+       tasks=[extract_data, analyze_data, generate_plot_code],
+       process=Process.sequential,
+       verbose=2,
        memory=False,
        output_log_file="crew.log",
    )
 
-    query = st.text_input("Enter your query:")
+   query = st.text_input("Enter your query:")
    
-    if st.button("Run Query"):
+   if st.button("Run Query"):
        inputs = {"query": query}
        
        try:
@@ -219,7 +219,10 @@ if uploaded_file is not None:
                    # Save plot to a temporary file and display it in Streamlit UI
                    with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as tmpfile:
                        plt.savefig(tmpfile.name)
-                       st.image(tmpfile.name)  # Displaying image in Streamlit
+                       plt.close()  # Close the plot to free up memory
+
+                       # Displaying image in Streamlit
+                       st.image(tmpfile.name) 
 
            elif isinstance(result, str):
                st.markdown(result)
