@@ -10,7 +10,6 @@ from datetime import datetime, timezone
 from dataclasses import asdict, dataclass
 from textwrap import dedent
 from typing import Any, Dict, List, Union
-
 import pandas as pd
 import streamlit as st
 from crewai import Agent, Crew, Process, Task
@@ -25,6 +24,10 @@ from langchain_community.tools.sql_database.tool import (
 from langchain_community.utilities.sql_database import SQLDatabase
 from langchain_core.callbacks.base import BaseCallbackHandler
 from langchain_openai import ChatOpenAI  # Importing OpenAI model
+
+# Additional imports for plotting
+import matplotlib.pyplot as plt
+import tempfile
 
 # Streamlit page config
 st.set_page_config(
@@ -131,6 +134,18 @@ if uploaded_file is not None:
         allow_delegation=False,
     )
 
+    plot_code_generator = Agent(
+        role="Plot Code Generator",
+        goal="Generate Python code for plotting based on analysis results.",
+        backstory=dedent(
+            """
+            You specialize in generating Python code for visualizations based on data analysis results.
+            """
+        ),
+        llm=llm,
+        allow_delegation=False,
+    )
+
     report_writer = Agent(
         role="Senior Report Editor",
         goal="Write executive summaries based on analysis",
@@ -151,9 +166,22 @@ if uploaded_file is not None:
 
     analyze_data = Task(
         description="Analyze the extracted data for {query}.",
-        expected_output="Detailed analysis text/plots/images",
+        expected_output="Detailed analysis text.",
         agent=data_analyst,
         context=[extract_data],
+    )
+
+    generate_plot_code = Task(
+        description="Generate Python code to create plots based on analysis output.",
+        expected_output="Python code for plotting.",
+        agent=plot_code_generator,
+        context=[analyze_data],
+    )
+
+    execute_plot_code = Task(
+        description="Execute generated Python plot code and return image path.",
+        expected_output="Path to generated plot image.",
+        agent=None,  # This will be handled inline in crew execution.
     )
 
     write_report = Task(
@@ -164,39 +192,45 @@ if uploaded_file is not None:
     )
 
     crew = Crew(
-        agents=[sql_dev, data_analyst, report_writer],
-        tasks=[extract_data, analyze_data, write_report],
+        agents=[sql_dev, data_analyst, plot_code_generator, report_writer],
+        tasks=[extract_data, analyze_data, generate_plot_code],
         process=Process.sequential,
         verbose=2,
         memory=False,
-        output_log_file="crew.log",
-    )
+       output_log_file="crew.log",
+   )
 
-    query = st.text_input("Enter your query:")
-    
-    if st.button("Run Query"):
-        inputs = {"query": query}
-        
-        try:
-            result = crew.kickoff(inputs=inputs)
+   query = st.text_input("Enter your query:")
+   
+   if st.button("Run Query"):
+       inputs = {"query": query}
+       
+       try:
+           result = crew.kickoff(inputs=inputs)
 
-            st.write("### Result")
-            
-            # Check if result contains images or plots along with text analysis.
-            if isinstance(result, dict):
-                # Display text result in JSON format.
-                st.json(result.get('text', {}))  # Assuming 'text' key holds textual analysis
-                
-                # Display images if any are included in result.
-                if 'images' in result:
-                    for img in result['images']:
-                        st.image(img)  # Display each image
-                
-            elif isinstance(result, str):
-                st.markdown(result)
-                
-            else:
-                st.write(result)
+           st.write("### Result")
+           
+           # Display textual analysis result
+           if isinstance(result, dict):
+               st.json(result.get('text', {}))  # Assuming 'text' key holds textual analysis
 
-        except Exception as e:
-            st.error(f"An error occurred: {e}")
+               # Generate plot using generated code from analyze_data output 
+               plot_code = result.get('plot_code', None)
+               if plot_code:
+                   # Execute generated plot code safely using exec()
+                   local_vars = {}
+                   exec(plot_code, {}, local_vars)
+
+                   # Save plot to a temporary file and display it in Streamlit UI
+                   with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as tmpfile:
+                       plt.savefig(tmpfile.name)
+                       st.image(tmpfile.name)  # Displaying image in Streamlit
+
+           elif isinstance(result, str):
+               st.markdown(result)
+               
+           else:
+               st.write(result)
+
+       except Exception as e:
+           st.error(f"An error occurred: {e}")
