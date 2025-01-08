@@ -198,37 +198,37 @@ if uploaded_file is not None:
     query = st.text_input("Enter your query:")
    
     if st.button("Run Query"):
-       inputs = {"query": query}
+        inputs = {"query": query}
        
-       try:
-           result = crew.kickoff(inputs=inputs)
+           try:
+               result = crew.kickoff(inputs=inputs)
 
-           st.write("### Result")
+               st.write("### Result")
            
-           # Display textual analysis result
-           if isinstance(result, dict):
-               st.json(result.get('text', {}))  # Assuming 'text' key holds textual analysis
+               # Display textual analysis result
+               if isinstance(result, dict):
+                   st.json(result.get('text', {}))  # Assuming 'text' key holds textual analysis
 
-               # Generate plot using generated code from analyze_data output 
-               plot_code = result.get('plot_code', None)
-               if plot_code:
-                   # Execute generated plot code safely using exec()
-                   local_vars = {}
-                   exec(plot_code, {}, local_vars)
+                   # Generate plot using generated code from analyze_data output 
+                   plot_code = result.get('plot_code', None)
+                   if plot_code:
+                       # Execute generated plot code safely using exec()
+                       local_vars = {}
+                       exec(plot_code, {}, local_vars)
 
-                   # Save plot to a temporary file and display it in Streamlit UI
-                   with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as tmpfile:
-                       plt.savefig(tmpfile.name)  # Save figure to temporary file
-                       plt.close()  # Close figure to free up memory
+                       # Save plot to a temporary file and display it in Streamlit UI
+                       with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as tmpfile:
+                           plt.savefig(tmpfile.name)  # Save figure to temporary file
+                           plt.close()  # Close figure to free up memory
 
-                       # Displaying image in Streamlit
-                       st.image(tmpfile.name) 
+                           # Displaying image in Streamlit
+                           st.image(tmpfile.name) 
 
-           elif isinstance(result, str):
-               st.markdown(result)
+               elif isinstance(result, str):
+                   st.markdown(result)
                
-           else:
-               st.write(result)
+               else:
+                   st.write(result)
 
-       except Exception as e:
-           st.error(f"An error occurred: {e}")
+               except Exception as e:
+               st.error(f"An error occurred: {e}")
