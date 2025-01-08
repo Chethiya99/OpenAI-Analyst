@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 from dataclasses import asdict, dataclass
 from textwrap import dedent
 from typing import Any, Dict, List, Union
+
 import pandas as pd
 import streamlit as st
 from crewai import Agent, Crew, Process, Task
@@ -178,12 +179,6 @@ if uploaded_file is not None:
         context=[analyze_data],
     )
 
-    execute_plot_code = Task(
-        description="Execute generated Python plot code and return image path.",
-        expected_output="Path to generated plot image.",
-        agent=None,  # This will be handled inline in crew execution.
-    )
-
     write_report = Task(
         description="Write an executive summary of the analysis.",
         expected_output="Markdown report text",
@@ -196,7 +191,7 @@ if uploaded_file is not None:
         tasks=[extract_data, analyze_data, generate_plot_code],
         process=Process.sequential,
         verbose=2,
-        memory=False,
+       memory=False,
        output_log_file="crew.log",
    )
 
