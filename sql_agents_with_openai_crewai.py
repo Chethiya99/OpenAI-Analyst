@@ -9,7 +9,7 @@ from pathlib import Path
 from datetime import datetime, timezone
 from dataclasses import asdict, dataclass
 from textwrap import dedent
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
 import pandas as pd
 import streamlit as st
@@ -151,7 +151,7 @@ if uploaded_file is not None:
 
     analyze_data = Task(
         description="Analyze the extracted data for {query}.",
-        expected_output="Detailed analysis text/plots",
+        expected_output="Detailed analysis text/plots/images",
         agent=data_analyst,
         context=[extract_data],
     )
@@ -173,17 +173,30 @@ if uploaded_file is not None:
     )
 
     query = st.text_input("Enter your query:")
+    
     if st.button("Run Query"):
         inputs = {"query": query}
+        
         try:
             result = crew.kickoff(inputs=inputs)
 
             st.write("### Result")
+            
+            # Check if result contains images or plots along with text analysis.
             if isinstance(result, dict):
-                st.json(result)
+                # Display text result in JSON format.
+                st.json(result.get('text', {}))  # Assuming 'text' key holds textual analysis
+                
+                # Display images if any are included in result.
+                if 'images' in result:
+                    for img in result['images']:
+                        st.image(img)  # Display each image
+                
             elif isinstance(result, str):
                 st.markdown(result)
+                
             else:
                 st.write(result)
+
         except Exception as e:
             st.error(f"An error occurred: {e}")
