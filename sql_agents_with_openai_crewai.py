@@ -151,7 +151,7 @@ if uploaded_file is not None:
 
     analyze_data = Task(
         description="Analyze the extracted data for {query}.",
-        expected_output="Detailed analysis text",
+        expected_output="Detailed analysis text/plots",
         agent=data_analyst,
         context=[extract_data],
     )
