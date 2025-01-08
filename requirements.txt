@@ -4,4 +4,4 @@ langchain-groq==0.1.5
 pysqlite-binary
 matplotlib
 plotly
-openai==0.28
+openai==1.13.3
