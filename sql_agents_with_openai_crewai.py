@@ -5,6 +5,20 @@ import io  # For capturing printed output
 from contextlib import redirect_stdout  # Corrected import
 import plotly.express as px  # Plotly for graphing
 
+# Define the function to query OpenAI
+def query_openai(prompt):
+    """
+    Send a query to OpenAI and get Python code as a response.
+    """
+    response = openai.ChatCompletion.create(
+        model="gpt-4o",  # or use "gpt-3.5-turbo" / "gpt-4" if needed
+        messages=[
+            {"role": "system", "content": "You are a helpful data assistant that generates Python code to process data."},
+            {"role": "user", "content": prompt}
+        ]
+    )
+    return response['choices'][0]['message']['content'].strip()
+
 # Streamlit app starts here
 st.title("M1 Dynamic Data Bot")
 st.write("Interact with your M1 data dynamically!")
@@ -195,8 +209,7 @@ if api_key:
                 return QuerySQLCheckerTool(db=db, llm=llm).invoke({"query": sql_query})
 
             
-           
-
+        
 
             data_analyst = Agent(
                              role="Senior Data Analyst",
