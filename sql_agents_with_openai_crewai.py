@@ -195,9 +195,9 @@ if uploaded_file is not None:
        output_log_file="crew.log",
    )
 
-   query = st.text_input("Enter your query:")
+    query = st.text_input("Enter your query:")
    
-   if st.button("Run Query"):
+    if st.button("Run Query"):
        inputs = {"query": query}
        
        try:
